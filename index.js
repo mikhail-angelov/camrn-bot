@@ -1,4 +1,4 @@
-const TOKEN = process.env.TELEGRAM_TOKEN || '655190042:AAGj7FCHGmLF2NzhOq3vLWuAvfhHTpeaXm4';
+const TOKEN = process.env.TELEGRAM_TOKEN || 'any';
 const TelegramBot = require('node-telegram-bot-api');
 const options = {
   webHook: {
@@ -7,7 +7,8 @@ const options = {
   }
 };
 
-const url = 'https://<your-domain>.now.sh' || process.env.NOW_URL;
+const url = 'https://<your-domain>.now.sh' || process.env.BOT_URL;
+console.log('--', url, token)
 const bot = new TelegramBot(TOKEN, options);
 bot.setWebHook(`${url}/bot${TOKEN}`);
 
