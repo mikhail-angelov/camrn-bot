@@ -1,0 +1,16 @@
+{
+  "name": "camrn-bot",
+  "version": "1.0.0",
+  "description": "telegram bot for android web camera",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": ["telegram","bot","webcam"],
+  "author": "Mikhail Angelov",
+  "license": "MIT",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.30.0"
+  }
+}
