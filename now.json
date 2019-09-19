@@ -1,8 +1,8 @@
 {
+  "version": 1,
   "name": "camrn-bot",
   "alias": "camrn-bot.now.sh",
   "env": {
-    "TELEGRAM_TOKEN": "@cam-bot-token",
-    "NOW_URL": "@cam-bot-url"
+    "TELEGRAM_TOKEN": "@camrn-bot-token"
   }
 }

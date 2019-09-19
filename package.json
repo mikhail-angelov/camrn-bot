@@ -5,9 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo \"fake build\"",
     "start": "node index.js"
   },
-  "keywords": ["telegram","bot","webcam"],
+  "keywords": [
+    "telegram",
+    "bot",
+    "webcam"
+  ],
   "author": "Mikhail Angelov",
   "license": "MIT",
   "dependencies": {
