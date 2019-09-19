@@ -4,7 +4,6 @@
   "public": true,
   "alias": "camrn-bot.now.sh",
   "env": {
-    "TELEGRAM_TOKEN": "@camrn-bot-token",
-    "BOT_URL": "@camrn-bot-url"
+    "TELEGRAM_TOKEN": "@camrn-bot-token"
   }
 }
