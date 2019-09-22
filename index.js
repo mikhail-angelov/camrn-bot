@@ -1,13 +1,27 @@
+const micro = require('micro')
+const { router, get, post } = require('microrouter')
 const TelegramBot = require('node-telegram-bot-api')
+const { onInfo, onSelfie, onSetCam, register, getMessage, pushPhoto } = require('./app')
+
 const token = process.env.TELEGRAM_TOKEN || 'any'
-const options = { webHook: { port: 443 } }
-
+const port = process.env.PORT || 3000
 const url = process.env.BOT_URL || process.env.NOW_URL
-console.log('bot hook ur:', url)
-const bot = new TelegramBot(token, options)
-bot.setWebHook(`${url}/bot${token}`)
+const bot = new TelegramBot(token, { webHook: { port: 443 } })
 
-bot.on('message', function onMessage(msg) {
-  console.log('-', msg)
-  bot.sendMessage(msg.chat.id, 'not ready yet')
+bot.setWebHook(`${url}/bot${token}`)
+bot.onText(/\/info (.+)/, msg => onInfo(bot, msg))
+bot.onText(/\/selfie (.+)/, msg => onSelfie(bot, msg))
+bot.onText(/\/setCam (.+)/, (msg, match) => onSetCam(bot, msg, match))
+
+const server = micro(
+  router(
+    post('/register', register),
+    post('/pushPhoto/:camera/:messageId', pushPhoto),
+    get('/messages/:camera', getMessage)
+  )
+)
+
+server.listen(port, () => {
+  console.log('bot hook ur:', url)
+  console.log('HTTP server is started on:', port)
 })
