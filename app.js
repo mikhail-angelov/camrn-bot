@@ -1,27 +1,32 @@
 const micro = require('micro')
 
-const cameraPull = {}
+let cameraPull = {}
+let bot = null
 
-const onInfo = (bot, msg) => {
+const init = (telegramBot)=>{
+  bot = telegramBot
+}
+
+const onInfo = (msg) => {
   console.log('on info:', msg.chat.id, JSON.stringify(msg.from))
   bot.sendMessage(msg.chat.id, 'this is smart camera bot, available commands /setCam <camera name> <token>, /selfie')
 }
-const onSelfie = (bot, msg) => {
+const onSelfie = (msg) => {
   console.log('on selfie:', msg.chat.id, msg.from.username)
   const chatId = msg.chat.id
   const camera = chatCamera(chatId)
   if (chatId && camera) {
-    cameraPull[camera].messages[msg.id] = { type: 'selfie', chatId, bot }
+    cameraPull[camera].messages[msg.id] = { type: 'selfie', chatId }
   }
 }
-const onSetCam = (bot, msg, match) => {
+const onSetCam = (msg, match) => {
   const chatId = msg.chat.id
   const params = match[1]
   console.log('on setCam:', msg.chat.id, msg.from.username, params)
   if (chatId && params && params.split(/\s+/).length > 1) {
     const [camera, token] = params.split(/\s+/)
     cameraPull[camera] = cameraPull[camera] || { messages: {} }
-    cameraPull[camera].messages[msg.id] = { type: 'register', chatId, token, bot }
+    cameraPull[camera].messages[msg.id] = { type: 'register', chatId, token }
   }
 }
 
@@ -33,7 +38,7 @@ const chatCamera = chatId => {
   )
   return camera
 }
-const sendImageToChat = (message, img) => message.bot.setChatPhoto(message.chatId, img)
+const sendImageToChat = (message, img) => bot.setChatPhoto(message.chatId, img)
 
 const register = async (req, res) => {
   const { camera, token, chats } = await micro.json(req)
@@ -44,10 +49,15 @@ const register = async (req, res) => {
 const getMessage = (req, res) => {
   console.log('messages:', req.params)
   const camera = req.params.camera
-  if (camera && cameraPull[camera] && cameraPull[camera].messages) {
-    return micro.send(res, 200, JSON.stringify(cameraPull[camera].messages))
+  if(!camera){
+    return micro.send(res, 400, 'invalid params')
   }
-  return micro.send(res, 400, 'invalid params')
+  if (cameraPull[camera] && cameraPull[camera].messages) {
+    return micro.send(res, 200, JSON.stringify({messages: cameraPull[camera].messages}))
+  }else{
+    return micro.send(res, 200, JSON.stringify({status: 'not registered'}))
+  }
+  
 }
 const pushPhoto = async (req, res) => {
   console.log('get photo', req.params)
@@ -62,12 +72,19 @@ const pushPhoto = async (req, res) => {
   return micro.send(res, 400, 'invalid params')
 }
 
+const getCameraPull = ()=>cameraPull
+const setCameraPull = (data)=>{cameraPull=data}
+
 module.exports = {
+  init,
   onInfo,
   onSelfie,
   onSetCam,
-  cameraPull,
   register,
   getMessage,
   pushPhoto,
+  
+  //private
+  getCameraPull,
+  setCameraPull,
 }

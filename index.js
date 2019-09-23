@@ -1,7 +1,7 @@
 const micro = require('micro')
 const { router, get, post } = require('microrouter')
 const TelegramBot = require('node-telegram-bot-api')
-const { onInfo, onSelfie, onSetCam, register, getMessage, pushPhoto } = require('./app')
+const { init, onInfo, onSelfie, onSetCam, register, getMessage, pushPhoto } = require('./app')
 
 const token = process.env.TELEGRAM_TOKEN || 'any'
 const port = process.env.PORT || 3000
@@ -12,6 +12,7 @@ bot.setWebHook(`${url}/bot${token}`)
 bot.onText(/\/info (.+)/, msg => onInfo(bot, msg))
 bot.onText(/\/selfie (.+)/, msg => onSelfie(bot, msg))
 bot.onText(/\/setCam (.+)/, (msg, match) => onSetCam(bot, msg, match))
+init(bot)
 
 const server = micro(
   router(
