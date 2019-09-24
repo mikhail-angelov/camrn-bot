@@ -16,7 +16,9 @@ const onSelfie = (msg) => {
   const chatId = msg.chat.id
   const camera = chatCamera(chatId)
   if (chatId && camera) {
-    cameraPull[camera].messages[msg.id] = { type: 'selfie', chatId }
+    cameraPull[camera].event = { id: msg.id, type: 'selfie', chatId, timestamp: Date.now() }
+  }else{
+    bot.sendMessage(msg.chat.id, 'Camera is not set for this chant, use /setCam command')
   }
 }
 const onSetCam = (msg, match) => {
@@ -25,8 +27,8 @@ const onSetCam = (msg, match) => {
   console.log('on setCam:', msg.chat.id, msg.from.username, params)
   if (chatId && params && params.split(/\s+/).length > 1) {
     const [camera, token] = params.split(/\s+/)
-    cameraPull[camera] = cameraPull[camera] || { messages: {} }
-    cameraPull[camera].messages[msg.id] = { type: 'register', chatId, token }
+    cameraPull[camera] = cameraPull[camera] || { event: null }
+    cameraPull[camera].event = { id: msg.id, type: 'register', chatId, token }
   }
 }
 
@@ -43,19 +45,19 @@ const sendImageToChat = (message, img) => bot.setChatPhoto(message.chatId, img)
 const register = async (req, res) => {
   const { camera, token, chats } = await micro.json(req)
   console.log('register:', camera, chats)
-  cameraPull[camera] = { token, chats, messages: {} }
+  cameraPull[camera] = { token, chats, event: null }
   micro.send(res, 200, 'ok')
 }
 const getMessage = (req, res) => {
-  console.log('messages:', req.params)
+  console.log('get messages:', req.params)
   const camera = req.params.camera
   if(!camera){
     return micro.send(res, 400, 'invalid params')
   }
-  if (cameraPull[camera] && cameraPull[camera].messages) {
-    return micro.send(res, 200, JSON.stringify({messages: cameraPull[camera].messages}))
+  if (cameraPull[camera]) {
+    return micro.send(res, 200, JSON.stringify(cameraPull[camera].event))
   }else{
-    return micro.send(res, 200, JSON.stringify({status: 'not registered'}))
+    return micro.send(res, 200, JSON.stringify({type: 'not registered'}))
   }
   
 }
@@ -64,9 +66,9 @@ const pushPhoto = async (req, res) => {
   const camera = req.params.camera
   const messageId = req.params.messageId
   const img = await micro.buffer(req)
-  if (camera && messageId && cameraPull[camera] && cameraPull[camera].messages[messageId]) {
-    sendImageToChat(cameraPull[camera].messages[messageId], img)
-    delete cameraPull[camera].messages[messageId]
+  if (camera && messageId && cameraPull[camera] && cameraPull[camera].event) {
+    sendImageToChat(cameraPull[camera].event, img)
+    cameraPull[camera].event = null
     return micro.send(res, 200, 'ok')
   }
   return micro.send(res, 400, 'invalid params')

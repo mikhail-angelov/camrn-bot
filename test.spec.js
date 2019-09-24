@@ -32,26 +32,26 @@ describe('chat bot integration test', function() {
     })
     expect(response).eql('ok')
     const cp = app.getCameraPull()
-    expect(cp.test).eql({ token: 'token', chats: ['one'], messages: {} })
+    expect(cp.test).eql({ token: 'token', chats: ['one'], event: null })
   })
 
   it('should handle get messages request', async () => {
-    const messages = { '123':{ id: 'test' }}
-    app.setCameraPull({test1: { messages }})
+    const event = { id: 'test', type: 'selfie' }
+    app.setCameraPull({test1: { event }})
     const response = await rp(`${baseUrl}/messages/test1`)
-    expect(JSON.parse(response)).eql({messages})
+    expect(JSON.parse(response)).eql(event)
   })
 
   it('should return not registered if there is not such camera in cameraPull', async () => {
-    const messages = { '123':{ id: 'test' }}
-    app.setCameraPull({test1: { messages }})
+    const event = { id: 'test' }
+    app.setCameraPull({test1: { event }})
     const response = await rp(`${baseUrl}/messages/test3`)
-    expect(JSON.parse(response)).eql({status: 'not registered'})
+    expect(JSON.parse(response)).eql({type: 'not registered'})
   })
 
   it('should handle push photo request', async () => {
     app.init({ setChatPhoto: () => {} } )
-    app.setCameraPull({test2: { messages: { '123': { chatId: 'test'} }, chats: ['test'] }})
+    app.setCameraPull({test2: { event: { id: '123', chatId: 'test' }, chats: ['test'] }})
     const img = Buffer.from('test')
     const response = await rp.post({
       url: `${baseUrl}/pushPhoto/test2/123`,
@@ -60,6 +60,6 @@ describe('chat bot integration test', function() {
     })
     expect(response).eql('ok')
     const cp = app.getCameraPull()
-    expect(cp.test2.messages).eql({})
+    expect(cp.test2.event).eql(null)
   })
 })
